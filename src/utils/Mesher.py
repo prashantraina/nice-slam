@@ -1,6 +1,7 @@
 import numpy as np
 import open3d as o3d
 import skimage
+import skimage.measure
 import torch
 import torch.nn.functional as F
 import trimesh

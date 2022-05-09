@@ -1,5 +1,4 @@
-import glob
-import os
+import glob, os, json, re
 
 import cv2
 import numpy as np
@@ -207,7 +206,6 @@ class ScanNet(BaseDataset):
             c2w = torch.from_numpy(c2w).float()
             self.poses.append(c2w)
 
-
 class CoFusion(BaseDataset):
     def __init__(self, cfg, args, scale, device='cuda:0'
                  ):
@@ -320,11 +318,43 @@ class TUM_RGBD(BaseDataset):
         pose[:3, 3] = pvec[:3]
         return pose
 
+class Gather3DRoom(BaseDataset):
+
+    def __init__(self, cfg, args, scale, device='cuda:0'):
+
+        super(Gather3DRoom, self).__init__(cfg, args, scale, device)
+
+        self.color_paths = sorted(
+            glob.glob(os.path.join(self.input_folder, 'color_*.jpg')), key=self.get_frame_num)
+        self.depth_paths = sorted(
+            glob.glob(os.path.join(self.input_folder, 'depth_*.png')), key=self.get_frame_num)
+        self.n_img = len(self.color_paths)
+
+        self.load_poses()
+    
+    def get_frame_num(self, path):
+        return int(re.search(r'_(\d+)', os.path.basename(path)).group(1))
+
+    def load_pose(self, path_frameJSON):
+
+        with open(path_frameJSON, 'r') as fin:
+            data = json.load(fin)
+        
+        cameraTransform = np.array(data['cameraTransform'], dtype=np.float32).reshape(4, 4)
+        return torch.from_numpy(cameraTransform)
+
+    def load_poses(self):
+        paths_frameJSON = sorted(
+            glob.glob(os.path.join(self.input_folder, 'frame_*.json')), key=self.get_frame_num)
+        
+        self.poses = list(map(self.load_pose, paths_frameJSON))
+
 
 dataset_dict = {
     "replica": Replica,
     "scannet": ScanNet,
     "cofusion": CoFusion,
     "azure": Azure,
-    "tumrgbd": TUM_RGBD
+    "tumrgbd": TUM_RGBD,
+    "gather3d": Gather3DRoom
 }
