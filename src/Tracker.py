@@ -103,6 +103,9 @@ class Tracker(object):
             batch_gt_depth = batch_gt_depth[inside_mask]
             batch_gt_color = batch_gt_color[inside_mask]
 
+        if batch_gt_depth.numel() == 0:
+            return None
+
         ret = self.renderer.render_batch_ray(
             self.c, self.decoders, batch_rays_d, batch_rays_o,  self.device, stage='color',  gt_depth=batch_gt_depth)
         depth, uncertainty, color = ret
@@ -230,7 +233,7 @@ class Tracker(object):
                         idx, cam_iter, gt_depth, gt_color, camera_tensor, self.c, self.decoders)
 
                     loss = self.optimize_cam_in_batch(
-                        camera_tensor, gt_color, gt_depth, self.tracking_pixels, optimizer_camera)
+                        camera_tensor, gt_color, gt_depth, self.tracking_pixels, optimizer_camera) or 1000000.
 
                     if cam_iter == 0:
                         initial_loss = loss
