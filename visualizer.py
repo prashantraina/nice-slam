@@ -32,6 +32,7 @@ if __name__ == '__main__':
                         action='store_true', help='visualize input frames')
     parser.add_argument('--no_gt_traj',
                         action='store_true', help='not visualize gt trajectory')
+    parser.add_argument('--ckpt_path', type=str, required=False)
     args = parser.parse_args()
     cfg = config.load_config(
         args.config, 'configs/nice_slam.yaml' if args.nice else 'configs/imap.yaml')
@@ -46,7 +47,7 @@ if __name__ == '__main__':
         ckpts = [os.path.join(ckptsdir, f)
                  for f in sorted(os.listdir(ckptsdir)) if 'tar' in f]
         if len(ckpts) > 0:
-            ckpt_path = ckpts[-1]
+            ckpt_path = args.ckpt_path or ckpts[-1]
             print('Get ckpt :', ckpt_path)
             ckpt = torch.load(ckpt_path, map_location=torch.device('cpu'))
             estimate_c2w_list = ckpt['estimate_c2w_list']
