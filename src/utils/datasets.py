@@ -327,7 +327,7 @@ class Gather3DRoom(BaseDataset):
         self.color_paths = sorted(
             glob.glob(os.path.join(self.input_folder, 'color_*.jpg')), key=self.get_frame_num)
         self.depth_paths = sorted(
-            glob.glob(os.path.join(self.input_folder, 'depth_*.png')), key=self.get_frame_num)
+            glob.glob(os.path.join(self.input_folder, 'distance_*.png')), key=self.get_frame_num)
         self.n_img = len(self.color_paths)
 
         self.load_poses()
